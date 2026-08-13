@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Template model — demonstrates this repo's conventions:
+// Discord snowflakes as String ids, @@index for hot query paths.
+model ExampleCounter {
+  guildId   String   @id
+  count     Int      @default(0)
+  note      String?
+  updatedAt DateTime @updatedAt
+}

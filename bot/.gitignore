@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+
+# output
+dist/
+out/
+*.tgz
+
+# environment
+.env
+.env.local
+.env.prod
+.env.*.local
+
+# database
+*.db
+
+# logs
+logs/
+*.log
+
+# caches
+.cache/
+*.tsbuildinfo
+
+# IDE
+.idea/
+.cursor/
+.vscode/
+
+# OS
+.DS_Store
