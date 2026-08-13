@@ -77,16 +77,28 @@ export async function loadCommands(
       builder.setDefaultMemberPermissions(categoryConfig.defaultMemberPermissions);
     }
 
+    const isFlat = categoryConfig?.flat === true;
+
     const categoryMap = new Map<string, Command>();
 
     const directFiles = await getAllFiles(categoryFolder, { filesOnly: true });
+    if (isFlat && directFiles.length !== 1) {
+      throw new Error(
+        `Flat category "${categoryName}" must contain exactly one command file, found ${directFiles.length}`
+      );
+    }
     for (const filePath of directFiles) {
       const command = await importCommand(filePath);
-      builder.addSubcommand(command.data);
+      if (!isFlat) {
+        builder.addSubcommand(command.data);
+      }
       categoryMap.set(command.data.name, command);
     }
 
     const subfolders = await getAllFiles(categoryFolder, { foldersOnly: true });
+    if (isFlat && subfolders.length > 0) {
+      throw new Error(`Flat category "${categoryName}" cannot contain subcommand-group folders`);
+    }
     for (const subfolder of subfolders) {
       const groupName = path.basename(subfolder);
 
@@ -118,6 +130,10 @@ export async function loadCommands(
     if (categoryMap.size === 0) {
       logger.warn({ category: categoryName }, 'Skipping empty category folder');
       continue;
+    }
+
+    if (isFlat) {
+      builder.setDescription(categoryMap.values().next().value!.data.description);
     }
 
     client.commands.set(categoryName, categoryMap);

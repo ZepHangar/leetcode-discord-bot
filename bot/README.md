@@ -132,6 +132,9 @@ The paginator renders Previous/Next buttons with customIds scoped to your comman
 | `DATABASE_URL`  | Prisma-compatible database connection string |
 | `GUILD_ID`      | Guild ID for command registration (dev)  |
 | `LOG_LEVEL`     | Pino log level (`info`, `debug`, `warn`, `error`) |
+| `LEETCODE_API_URL` | Internal leetcode-api service URL (default: `http://leetcode-api:3000`) |
+| `OPENCODE_API_KEY` | OpenCode Go API key; leave empty to disable AI personalization |
+| `OPENCODE_GO_MODEL` | OpenCode Go model (default: `deepseek-v4-flash`) |
 
 ---
 
