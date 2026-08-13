@@ -97,10 +97,10 @@ USD $0.
 
 You may stop using the Bot at any time by removing it from your guild,
 ceasing to interact with it in DMs, and/or clearing your stored
-configuration (see the [Privacy Policy](./PRIVACY_POLICY.md) for how to
-request deletion). The developer may block or remove the Bot's access to
-your guild or account at their discretion, including for violations of
-Section 5.
+configuration via the **Clear** button in the `/setup` panel (see the
+[Privacy Policy](./PRIVACY_POLICY.md) for how deletion works). The developer
+may block or remove the Bot's access to your guild or account at their
+discretion, including for violations of Section 5.
 
 ## 10. Changes to These Terms
 

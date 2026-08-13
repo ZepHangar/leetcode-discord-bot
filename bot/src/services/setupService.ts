@@ -33,6 +33,16 @@ export async function setUserSchedule(
   });
 }
 
+/**
+ * Delete a user's DM configuration.
+ *
+ * @postcondition No `UserSetup` row exists for the user. No-op when the row is
+ *   already gone (e.g. two clear confirmations race).
+ */
+export async function deleteUserSetup(discordUserId: string): Promise<void> {
+  await prisma.userSetup.deleteMany({ where: { discordUserId } });
+}
+
 export async function markUserSent(discordUserId: string, dateStr: string): Promise<void> {
   await prisma.userSetup.update({
     where: { discordUserId },
@@ -75,6 +85,16 @@ export async function markGuildSent(guildId: string, dateStr: string): Promise<v
     where: { guildId },
     data: { lastSentDate: dateStr },
   });
+}
+
+/**
+ * Delete a guild's configuration.
+ *
+ * @postcondition No `GuildSetup` row exists for the guild. No-op when the row is
+ *   already gone (e.g. two clear confirmations race).
+ */
+export async function deleteGuildSetup(guildId: string): Promise<void> {
+  await prisma.guildSetup.deleteMany({ where: { guildId } });
 }
 
 export async function listDueGuildSetups(): Promise<GuildSetup[]> {

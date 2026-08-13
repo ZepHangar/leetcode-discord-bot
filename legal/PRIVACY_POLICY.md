@@ -88,6 +88,10 @@ developer, accessible only to the developer for operating and debugging the
 Bot. Data is retained for as long as your DM configuration or your guild's
 configuration exists, and is deleted when:
 
+- You press the **Clear** button in the `/setup` panel — in DMs this deletes
+  your personal configuration; in a guild (requires the **Manage Server**
+  permission) it deletes the server's configuration immediately (see
+  Section 6).
 - You explicitly clear a field (e.g. submitting an empty AI personalization
   prompt clears it immediately).
 - You or an administrator request deletion (see Section 6).
@@ -111,6 +115,11 @@ You can, at any time:
   corresponding "Overwrite" button.
 - **Clear your AI prompt** by resubmitting the AI modal with an empty
   message.
+- **Delete your entire configuration** by pressing the **Clear** button in
+  the `/setup` panel — in DMs this deletes your personal configuration; in a
+  guild (requires the **Manage Server** permission) it deletes the server's
+  configuration. A guild clear does not delete your personal DM
+  configuration, and vice versa. Deletion is immediate and cannot be undone.
 - **Request full deletion** of your stored DM or guild configuration by
   contacting the developer via
   [GitHub Issues](https://github.com/wbrous/leetcode-discord-bot/issues).
