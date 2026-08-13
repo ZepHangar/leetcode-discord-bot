@@ -14,6 +14,11 @@ export default async function handleAutocomplete(
   const commandKey = group && sub ? `${group}.${sub}` : (sub ?? category);
   const command = client.getCommand(category, commandKey);
 
+  if (interaction.guildId && !interaction.guild) {
+    await interaction.respond([]);
+    return;
+  }
+
   if (client.guildOnlyCategories.has(category) && !interaction.guildId) {
     await interaction.respond([]);
     return;
