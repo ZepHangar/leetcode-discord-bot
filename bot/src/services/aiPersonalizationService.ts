@@ -9,6 +9,9 @@ import type { DailyProblem } from '../lib/leetcodeApi.js';
 
 const OPENCODE_GO_CHAT_URL = 'https://opencode.ai/zen/go/v1/chat/completions';
 
+/** How long to wait for the AI provider before giving up (prevents the cron tick from hanging). */
+const FETCH_TIMEOUT_MS = 10_000;
+
 const SYSTEM_PROMPT =
   "You are a motivating coding coach. Write a short (2-3 sentence) personalized note introducing today's LeetCode daily problem, following the user's stated preferences. Do not include the problem link or title verbatim; that is shown separately.";
 
@@ -36,6 +39,7 @@ export async function generatePersonalizedBlurb(
   try {
     res = await fetch(OPENCODE_GO_CHAT_URL, {
       method: 'POST',
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       headers: {
         Authorization: `Bearer ${env.OPENCODE_API_KEY}`,
         'Content-Type': 'application/json',

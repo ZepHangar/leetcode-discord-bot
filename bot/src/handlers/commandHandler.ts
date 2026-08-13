@@ -92,7 +92,7 @@ export async function loadCommands(
       if (!isFlat) {
         builder.addSubcommand(command.data);
       }
-      categoryMap.set(command.data.name, command);
+      categoryMap.set(isFlat ? categoryName : command.data.name, command);
     }
 
     const subfolders = await getAllFiles(categoryFolder, { foldersOnly: true });

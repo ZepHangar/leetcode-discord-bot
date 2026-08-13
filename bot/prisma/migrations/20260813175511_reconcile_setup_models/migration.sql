@@ -1,3 +1,12 @@
+/*
+  Warnings:
+
+  - You are about to drop the `ExampleCounter` table. If the table is not empty, all the data it contains will be lost.
+
+*/
+-- DropTable
+DROP TABLE "ExampleCounter";
+
 -- CreateTable
 CREATE TABLE "UserSetup" (
     "discordUserId" TEXT NOT NULL,

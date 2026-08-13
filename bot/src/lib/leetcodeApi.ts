@@ -23,14 +23,19 @@ interface DailyProblemResponse {
   date: string;
 }
 
+/** How long to wait for leetcode-api before giving up (prevents the cron tick from hanging). */
+const FETCH_TIMEOUT_MS = 10_000;
+
 /**
  * Fetch today's LeetCode daily problem.
  *
- * @throws {Error} If the request fails or leetcode-api responds with a non-OK status.
+ * @throws {Error} If the request fails, times out, or leetcode-api responds with a non-OK status.
  */
 export async function fetchDailyProblem(): Promise<DailyProblem> {
   const env = loadEnv();
-  const res = await fetch(`${env.LEETCODE_API_URL}/daily`);
+  const res = await fetch(`${env.LEETCODE_API_URL}/daily`, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
 
   if (!res.ok) {
     throw new Error(`leetcode-api /daily returned ${res.status}`);
