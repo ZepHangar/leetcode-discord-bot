@@ -46,6 +46,8 @@ export interface Command {
 export interface CategoryConfig {
   /** When true, the category is registered with DM usage disabled and guarded at runtime */
   guildOnly?: boolean;
+  /** When true, this category's single command file is registered as the bare top-level command instead of a subcommand. */
+  flat?: boolean;
   /** Permissions the bot must have — checked at runtime before command execution */
   botPermissions?: bigint[];
   /** Combined permission bitfield required from the invoking member (hides command in Discord UI) */

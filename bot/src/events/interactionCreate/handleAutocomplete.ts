@@ -10,8 +10,8 @@ export default async function handleAutocomplete(
 
   const category = interaction.commandName;
   const group = interaction.options.getSubcommandGroup(false);
-  const sub = interaction.options.getSubcommand();
-  const commandKey = group ? `${group}.${sub}` : sub;
+  const sub = interaction.options.getSubcommand(false);
+  const commandKey = group && sub ? `${group}.${sub}` : (sub ?? category);
   const command = client.getCommand(category, commandKey);
 
   if (client.guildOnlyCategories.has(category) && !interaction.guildId) {

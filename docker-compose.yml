@@ -9,6 +9,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      leetcode-api:
+        condition: service_started
+
+  leetcode-api:
+    image: alfaarghya/alfa-leetcode-api:2.0.4
+    restart: unless-stopped
 
   postgres:
     image: postgres:16-alpine

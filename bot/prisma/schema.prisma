@@ -7,11 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Template model — demonstrates this repo's conventions:
-// Discord snowflakes as String ids, @@index for hot query paths.
-model ExampleCounter {
-  guildId   String   @id
-  count     Int      @default(0)
-  note      String?
-  updatedAt DateTime @updatedAt
+
+model UserSetup {
+  discordUserId String   @id
+  timezone      String?
+  sendTime      String?  // "HH:MM", 24h, validated IANA-local
+  aiPrompt      String?
+  lastSentDate  String?  // "YYYY-MM-DD" in `timezone`; guards duplicate sends
+  updatedAt     DateTime @updatedAt
+}
+
+model GuildSetup {
+  guildId       String   @id
+  channelId     String?
+  timezone      String?
+  sendTime      String?
+  aiPrompt      String?  // reserved for future guild-scoped AI personalization; not yet exposed in the UI
+  lastSentDate  String?
+  updatedAt     DateTime @updatedAt
 }

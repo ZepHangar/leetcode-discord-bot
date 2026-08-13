@@ -40,6 +40,34 @@ describe('loadEnv', () => {
     expect(env.LOG_LEVEL).toBeUndefined();
   });
 
+  // If this fails: LEETCODE_API_URL/OPENCODE_GO_MODEL defaults are missing or OPENCODE_API_KEY leaks a default
+  test('applies defaults for LeetCode/OpenCode vars when unset', () => {
+    process.env.DISCORD_TOKEN = 'test-token';
+    process.env.DATABASE_URL = 'postgresql://test';
+    delete process.env.LEETCODE_API_URL;
+    delete process.env.OPENCODE_API_KEY;
+    delete process.env.OPENCODE_GO_MODEL;
+
+    const env = loadEnv();
+    expect(env.LEETCODE_API_URL).toBe('http://leetcode-api:3000');
+    expect(env.OPENCODE_GO_MODEL).toBe('deepseek-v4-flash');
+    expect(env.OPENCODE_API_KEY).toBeUndefined();
+  });
+
+  // If this fails: explicit LeetCode/OpenCode vars are dropped in favor of defaults
+  test('preserves explicit LeetCode/OpenCode vars when set', () => {
+    process.env.DISCORD_TOKEN = 'test-token';
+    process.env.DATABASE_URL = 'postgresql://test';
+    process.env.LEETCODE_API_URL = 'http://custom-leetcode:4000';
+    process.env.OPENCODE_API_KEY = 'sk-test-key';
+    process.env.OPENCODE_GO_MODEL = 'custom-model';
+
+    const env = loadEnv();
+    expect(env.LEETCODE_API_URL).toBe('http://custom-leetcode:4000');
+    expect(env.OPENCODE_API_KEY).toBe('sk-test-key');
+    expect(env.OPENCODE_GO_MODEL).toBe('custom-model');
+  });
+
   // If this fails: optional vars are lost when present
   test('includes optional vars when set', () => {
     process.env.DISCORD_TOKEN = 'test-token';
