@@ -15,6 +15,8 @@ import type { CV2MessageOptions } from '../../cv2/index.js';
 import { buildCustomId } from '../../utils/customId.js';
 import { isValidTimeString, isValidTimezone } from '../../utils/setupValidation.js';
 import {
+  deleteGuildSetup,
+  deleteUserSetup,
   getGuildSetup,
   getUserSetup,
   setGuildChannel,
@@ -75,6 +77,15 @@ async function buildPanel(interaction: PanelInteraction): Promise<CV2MessageOpti
               disabled
             />
           </row>
+          <text-display>**Clear:** Permanently delete this server's reminder configuration</text-display>
+          <row>
+            <button
+              style="danger"
+              disabled={!guild}
+              customId={buildCustomId('setup', 'setup', 'clear')}
+              label="Clear"
+            />
+          </row>
         </container>
       </message>
     );
@@ -104,6 +115,79 @@ async function buildPanel(interaction: PanelInteraction): Promise<CV2MessageOpti
             style={hasAi ? 'danger' : 'success'}
             customId={buildCustomId('setup', 'setup', 'ai')}
             label={hasAi ? 'Overwrite' : 'Set'}
+          />
+        </row>
+        <text-display>**Clear:** Permanently delete your personal reminder configuration</text-display>
+        <row>
+          <button
+            style="danger"
+            disabled={!user}
+            customId={buildCustomId('setup', 'setup', 'clear')}
+            label="Clear"
+          />
+        </row>
+      </container>
+    </message>
+  );
+}
+
+/**
+ * Confirmation step for the Clear button. Cancel returns to the normal setup
+ * page; Confirm wipes the row the panel was opened for.
+ *
+ * @param guildCtx true when the panel is a guild (server) setup page.
+ * @postcondition Message renders exactly Cancel (`clear-cancel`) and Confirm
+ *   (`clear-confirm`) buttons; nothing is deleted by rendering it.
+ */
+export function buildClearConfirmView(guildCtx: boolean): CV2MessageOptions {
+  const title = guildCtx ? 'Clear server setup' : 'Clear personal setup';
+  const body = guildCtx
+    ? "This permanently deletes this server's reminder configuration (channel and schedule). This cannot be undone."
+    : 'This permanently deletes your personal reminder configuration (schedule and AI prompt). This cannot be undone.';
+
+  return (
+    <message ephemeral>
+      <container>
+        <text-display>## {title}{'\n'}{body}</text-display>
+        <row>
+          <button
+            style="secondary"
+            customId={buildCustomId('setup', 'setup', 'clear-cancel')}
+            label="Cancel"
+          />
+          <button
+            style="danger"
+            customId={buildCustomId('setup', 'setup', 'clear-confirm')}
+            label="Confirm"
+          />
+        </row>
+      </container>
+    </message>
+  );
+}
+
+/**
+ * Result state shown after Confirm wipes the row.
+ *
+ * @param guildCtx true when the panel was a guild (server) setup page.
+ * @postcondition Guild clear tells the admin their personal DM configuration was
+ *   not touched (a guild wipe only deletes the server's row).
+ */
+export function buildClearedView(guildCtx: boolean): CV2MessageOptions {
+  const title = guildCtx ? 'Server setup cleared' : 'Personal setup cleared';
+  const body = guildCtx
+    ? "This server's reminder configuration has been deleted.\nNote: your personal DM setup was not touched and remains active."
+    : 'Your personal reminder configuration has been deleted.';
+
+  return (
+    <message ephemeral>
+      <container>
+        <text-display>## {title}{'\n'}{body}</text-display>
+        <row>
+          <button
+            style="secondary"
+            customId={buildCustomId('setup', 'setup', 'clear-done')}
+            label="Back to setup"
           />
         </row>
       </container>
@@ -187,6 +271,45 @@ const buttons: Command['buttons'] = {
       .addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(promptInput));
 
     await interaction.showModal(modal);
+  },
+
+  clear: async (interaction) => {
+    if (interaction.inGuild() && !interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
+      await interaction.reply(NO_MANAGE_GUILD_REPLY);
+      return;
+    }
+
+    const hasData = interaction.inGuild()
+      ? !!(await getGuildSetup(interaction.guildId!))
+      : !!(await getUserSetup(interaction.user.id));
+    if (!hasData) {
+      // Row already gone (e.g. a prior clear) — show the current panel.
+      await interaction.update(await buildPanel(interaction));
+      return;
+    }
+
+    await interaction.update(buildClearConfirmView(interaction.inGuild()));
+  },
+
+  'clear-cancel': async (interaction) => {
+    await interaction.update(await buildPanel(interaction));
+  },
+
+  'clear-confirm': async (interaction) => {
+    if (interaction.inGuild()) {
+      if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
+        await interaction.reply(NO_MANAGE_GUILD_REPLY);
+        return;
+      }
+      await deleteGuildSetup(interaction.guildId!);
+    } else {
+      await deleteUserSetup(interaction.user.id);
+    }
+    await interaction.update(buildClearedView(interaction.inGuild()));
+  },
+
+  'clear-done': async (interaction) => {
+    await interaction.update(await buildPanel(interaction));
   },
 };
 
