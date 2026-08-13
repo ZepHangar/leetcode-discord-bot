@@ -78,6 +78,6 @@ jobs:
           context: ./bot
           file: ./bot/Dockerfile
           push: false
-          tags: zep-bot:ci
+          tags: leetcode-discord-bot:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max

@@ -1,5 +1,5 @@
 {
-  "name": "zep-bot",
+  "name": "leetcode-discord-bot",
   "version": "1.0.0",
   "description": "Production-grade modular Discord bot boilerplate",
   "main": "src/index.ts",

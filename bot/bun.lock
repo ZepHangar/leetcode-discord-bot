@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "zep-bot",
+      "name": "leetcode-discord-bot",
       "dependencies": {
         "@prisma/client": "^6.9.0",
         "discord.js": "^14.18.0",
