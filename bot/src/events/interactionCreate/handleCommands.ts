@@ -14,6 +14,14 @@ export default async function handleCommands(
   const commandKey = group && sub ? `${group}.${sub}` : (sub ?? category);
   const command = client.getCommand(category, commandKey);
 
+  if (interaction.guildId && !interaction.guild) {
+    await interaction.reply({
+      content: "❌ I'm not in this server. Invite me first, then run this command again.",
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
   if (client.guildOnlyCategories.has(category) && !interaction.guildId) {
     await interaction.reply({
       content: '❌ This command can only be used in a server.',
