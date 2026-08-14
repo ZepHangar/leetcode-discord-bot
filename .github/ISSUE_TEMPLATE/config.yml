@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Development Guide
+    url: https://github.com/ZepHangar/leetcode-discord-bot/blob/main/bot/DEVELOPERS.md
+    about: Architecture overview and contribution conventions
+  - name: Terms of Service / Privacy Policy
+    url: https://github.com/ZepHangar/leetcode-discord-bot/blob/main/legal/README.md
+    about: Legal documents for the Discord bot
