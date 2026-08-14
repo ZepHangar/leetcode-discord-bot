@@ -89,14 +89,14 @@ export async function generatePersonalizedBlurb(
   // partial text as the embed description is the bug reported in #17; treat it
   // as a failed generation so the caller falls back to a complete default
   // description instead of a cut-off sentence.
-  if (choice?.finish_reason === 'length') {
+  if (choice?.finish_reason?.toLowerCase() === 'length') {
     logger.warn({ prompt }, 'OpenCode Go response truncated (finish_reason=length); using fallback description');
     return null;
   }
 
   // Guard against models that stop early without signalling truncation: a blurb
   // that doesn't end in sentence-final punctuation is incomplete.
-  if (!/[.!?…]["'”’)]*$/.test(content)) {
+  if (!/[.!?…:]["'”’)]*$/.test(content)) {
     logger.warn({ prompt }, 'OpenCode Go blurb ended mid-sentence; using fallback description');
     return null;
   }
