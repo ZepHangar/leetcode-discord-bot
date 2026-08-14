@@ -1,0 +1,75 @@
+name: Bug Report
+description: Report a bug or crash
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Minimal steps to reproduce the issue
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-output
+    attributes:
+      label: Error Output
+      description: Paste any error messages or stack traces from the bot logs
+      render: shell
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Platform
+      description: Where are you running the bot?
+      options:
+        - Docker (docker compose)
+        - Bare Bun (bun run start)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Bot version
+      description: Image tag or commit you are running (e.g. output of `git rev-parse HEAD`)
+      placeholder: "e.g. main@d88ae75"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the bot is affected?
+      options:
+        - Commands (/setup, /help, /ping)
+        - Daily messages / embeds
+        - Buttons / modals / interactions
+        - Scheduling / cron
+        - Configuration / environment
+        - Deployment / Docker
+        - Other
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Screenshots, config snippets, or other relevant information
