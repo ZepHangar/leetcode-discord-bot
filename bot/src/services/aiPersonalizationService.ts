@@ -16,7 +16,10 @@ const SYSTEM_PROMPT =
   "You are a motivating coding coach. Write a short (2-3 sentence) personalized note introducing today's LeetCode daily problem, following the user's stated preferences. Do not include the problem link or title verbatim; that is shown separately.";
 
 interface OpenCodeChatResponse {
-  choices?: Array<{ message?: { content?: string } }>;
+  choices?: Array<{
+    message?: { content?: string };
+    finish_reason?: string;
+  }>;
 }
 
 /**
@@ -24,7 +27,8 @@ interface OpenCodeChatResponse {
  *
  * @precondition `prompt` is non-empty.
  * @postcondition Returns a trimmed 2–4 sentence blurb, or `null` if `OPENCODE_API_KEY`
- *   is unset or the request/response fails — never throws, since this runs inside a
+ *   is unset, the request/response fails, or the provider returns a truncated
+ *   (mid-sentence) completion — never throws, since this runs inside a
  *   background cron tick where a flaky third-party AI call must not block the rest
  *   of the dispatch.
  */
@@ -53,7 +57,10 @@ export async function generatePersonalizedBlurb(
             content: `User preferences: ${prompt}\n\nToday's problem: "${problem.title}" (${problem.difficulty})`,
           },
         ],
-        max_tokens: 200,
+        // deepseek-v4-flash (and other Go reasoning models) count reasoning
+        // tokens against max_tokens; leave headroom so the visible blurb isn't
+        // cut off mid-sentence when the model reasons long.
+        max_tokens: 500,
       }),
     });
   } catch (error) {
@@ -73,6 +80,26 @@ export async function generatePersonalizedBlurb(
     logger.warn({ error }, 'OpenCode Go response was not valid JSON');
     return null;
   }
-  const content = data.choices?.[0]?.message?.content?.trim();
-  return content || null;
+  const choice = data.choices?.[0];
+  const content = choice?.message?.content?.trim();
+  if (!content) return null;
+
+  // A `length` finish_reason means the model hit the token budget mid-sentence
+  // (reasoning models spend tokens reasoning before writing). Surfacing the
+  // partial text as the embed description is the bug reported in #17; treat it
+  // as a failed generation so the caller falls back to a complete default
+  // description instead of a cut-off sentence.
+  if (choice?.finish_reason?.toLowerCase() === 'length') {
+    logger.warn({ prompt }, 'OpenCode Go response truncated (finish_reason=length); using fallback description');
+    return null;
+  }
+
+  // Guard against models that stop early without signalling truncation: a blurb
+  // that doesn't end in sentence-final punctuation is incomplete.
+  if (!/[.!?…:]["'”’)]*$/.test(content)) {
+    logger.warn({ prompt }, 'OpenCode Go blurb ended mid-sentence; using fallback description');
+    return null;
+  }
+
+  return content;
 }
