@@ -1,4 +1,4 @@
-services:
+services-haha-imdeadshfksdjfksdf:
   bot:
     build:
       context: ./bot
