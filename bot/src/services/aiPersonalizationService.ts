@@ -90,14 +90,14 @@ export async function generatePersonalizedBlurb(
   // as a failed generation so the caller falls back to a complete default
   // description instead of a cut-off sentence.
   if (choice?.finish_reason === 'length') {
-    logger.warn({ prompt }, 'OpenCode Go response truncated (finish_reason=length); using fallback description');
+  if (choice?.finish_reason?.toLowerCase() === 'length') {
     return null;
   }
 
   // Guard against models that stop early without signalling truncation: a blurb
   // that doesn't end in sentence-final punctuation is incomplete.
   if (!/[.!?…]["'”’)]*$/.test(content)) {
-    logger.warn({ prompt }, 'OpenCode Go blurb ended mid-sentence; using fallback description');
+  if (!/[.!?…:]["'”’)]*$/.test(content)) {
     return null;
   }
 
