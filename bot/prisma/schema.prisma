@@ -26,3 +26,23 @@ model GuildSetup {
   lastSentDate  String?
   updatedAt     DateTime @updatedAt
 }
+
+// One feedback/submission event per user per daily problem. `compressedSummary`
+// is the only free-text kept from the user (the model-condensed record that is
+// re-injected into the next generation); raw transcripts are never stored.
+model Submission {
+  id                Int      @id @default(autoincrement())
+  discordUserId     String
+  problemSlug       String
+  problemTitle      String
+  problemDate       String   // "YYYY-MM-DD" of the daily problem the card was for
+  kind              String   // "submission" | "incdec" | "giveup"
+  difficultyRating  String?  // self-reported rating label (kind = "submission")
+  adjustment        String?  // "Increase" | "Decrease" (kind = "incdec")
+  compressedSummary String   // one-line model-compressed history entry
+  codeUrl           String?  // Discord CDN URL of the uploaded code (kind = "submission")
+  codeFileName      String?
+  createdAt         DateTime @default(now())
+
+  @@index([discordUserId, createdAt])
+}

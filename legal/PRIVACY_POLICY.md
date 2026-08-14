@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Service:** Zep Bot (the "Bot")
-**Effective date:** 2026-08-13
+**Effective date:** 2026-08-14
 **Contact:** [GitHub Issues](https://github.com/wbrous/leetcode-discord-bot/issues)
 
 This Privacy Policy explains what data the Bot collects, why, how it's
@@ -13,9 +13,10 @@ practices, which are governed by
 ## 1. Data We Collect
 
 The Bot only collects data you or your server explicitly provide by running
-the `/setup` command. We do not read message history, do not log message
-content outside of what's described below, and do not collect analytics or
-tracking data.
+the `/setup` command or by using the buttons and modals on the daily problem
+card (**Submit**, **Inc/Dec Difficulty**, **Give Up**). We do not read
+message history, do not log message content outside of what's described
+below, and do not collect analytics or tracking data.
 
 ### 1.1 Direct-message (per-user) configuration
 
@@ -45,12 +46,32 @@ guild, we store, keyed to the guild's Discord ID:
 Guild-scoped AI personalization is not currently exposed in the `/setup`
 panel and is not collected.
 
-### 1.3 What we do not collect
+### 1.3 Problem submissions and difficulty feedback
 
-We do not collect message content outside the `/setup` modals described
-above, do not collect emails, IP addresses, device identifiers, or payment
-information, and do not use the data collected for advertising or sell it to
-any third party.
+When you use the daily problem card's **Submit**, **Inc/Dec Difficulty**, or
+**Give Up** buttons, we store one record per event, keyed to your Discord
+user ID:
+
+| Field | Description |
+|---|---|
+| Discord user ID | Used to attribute each record to you. |
+| Problem identifier (slug, title, date) | Which daily problem the feedback is about. |
+| Event type | Whether the record is a code submission, an Inc/Dec Difficulty request, or a Give Up. |
+| Self-reported difficulty | Your rating from the Submission modal (`Piece of cake` … `How do people even do these!?!?`). |
+| Requested direction | `Increase` or `Decrease`, from the Inc/Dec Difficulty modal. |
+| Compressed summary | A one-sentence model-written summary of your feedback (e.g. "solved quickly with sliding window, wants more multi-step reasoning"). Raw free-text you type in the Inc/Dec Difficulty modal is **never stored verbatim** — only this condensed summary is kept. |
+| Code attachment | The file you upload in the Submission modal, stored as a Discord-hosted attachment URL and filename. |
+
+These records form your personalization history: they are fed back into the
+AI that writes your future daily problem cards so the difficulty can track
+you (see Sections 2 and 3).
+
+### 1.4 What we do not collect
+
+We do not collect message content outside the `/setup` and daily-card modals
+described above, do not collect emails, IP addresses, device identifiers, or
+payment information, and do not use the data collected for advertising or
+sell it to any third party.
 
 ## 2. How We Use Your Data
 
@@ -60,9 +81,11 @@ Stored data is used solely to:
   configured timezone and send time.
 - Deliver that reminder — as a Discord DM (per-user) or a message in your
   configured channel (per-guild) — containing that day's LeetCode Daily
-  Challenge title, difficulty, and link.
-- If you've set an AI personalization prompt, generate a short accompanying
-  blurb (see Section 3).
+  Challenge as an interactive problem card.
+- Personalize your daily problem card (description, difficulty tier,
+  statement, and examples) from your AI personalization prompt and your
+  accumulated submission/feedback history.
+- Generate the one-line compressed summaries described in Section 1.3.
 - Prevent sending you more than one reminder per local calendar day.
 
 ## 3. Third-Party Sharing
@@ -72,21 +95,21 @@ provide the service:
 
 | Third party | What's sent | Why | When |
 |---|---|---|---|
-| **LeetCode daily-problem data source** (`leetcode-api`, an internal proxy for LeetCode's public daily challenge) | Nothing user-identifying — only a request for today's public daily problem. | To source the problem title/difficulty/link included in your reminder. | Once per dispatch tick that has at least one due reminder. |
-| **OpenCode ("Go") AI service** | Your AI personalization prompt text, plus the day's problem title and difficulty. **No Discord user ID, username, or other identifying information is included in this request.** | To generate the personalized blurb accompanying your reminder, if you've opted in. | Only when you've set an AI personalization prompt and a reminder is due for you; never for guild reminders (not yet supported). |
-| **Discord** | Standard Discord API calls to deliver your DM or post to your configured channel. | Required to deliver the reminder at all — this is how any Discord bot sends messages. | Every time a reminder is dispatched. |
+| **LeetCode daily-problem data source** (`leetcode-api`, an internal proxy for LeetCode's public daily challenge) | Nothing user-identifying — only a request for today's public daily problem (and, when personalizing, the problem's statement, test cases, hints, and official solution). | To source the problem content included in your card. | Once per dispatch tick that has at least one due reminder, and when a personalized card is generated. |
+| **OpenCode ("Go") AI service** | For card generation: your AI personalization prompt text, the day's problem statement/test cases/hints/official solution, and your compressed feedback history (one-line summaries only — never raw free-text or your code). For feedback compression: your rating/requested direction, your free-text details, and the problem title. **No Discord user ID, username, or other identifying information is included in these requests.** | To generate your personalized problem card and the compressed summary stored per Section 1.3. | When a personalized card is generated for you (DM reminders or `/daily` in a DM), or when you submit feedback via the daily card's modals. Never for guild reminders (shared cards are not personalized). |
+| **Discord** | Standard Discord API calls to deliver your DM or post to your configured channel, plus the code file you upload in the Submission modal (hosted on Discord's CDN; the Bot stores only the resulting attachment URL and filename). | Required to deliver the card and to store your submitted code. | Every time a reminder is dispatched and every time you submit code. |
 
-If you do not set an AI personalization prompt, no data is ever sent to the
-AI provider. Sending data to LeetCode's public daily-problem source cannot
-be disabled, as it's required for the Bot's core function, but that request
-carries no data about you.
+If you do not set an AI personalization prompt and have no feedback history,
+no data is ever sent to the AI provider. Sending data to LeetCode's public
+daily-problem source cannot be disabled, as it's required for the Bot's core
+function, but that request carries no data about you.
 
 ## 4. Data Storage and Retention
 
 Configuration data is stored in a PostgreSQL database operated by the Bot's
 developer, accessible only to the developer for operating and debugging the
-Bot. Data is retained for as long as your DM configuration or your guild's
-configuration exists, and is deleted when:
+Bot. Configuration data is retained for as long as your DM configuration or
+your guild's configuration exists, and is deleted when:
 
 - You press the **Clear** button in the `/setup` panel — in DMs this deletes
   your personal configuration; in a guild (requires the **Manage Server**
@@ -97,6 +120,11 @@ configuration exists, and is deleted when:
 - You or an administrator request deletion (see Section 6).
 - The developer performs routine data cleanup for accounts/guilds that have
   removed the Bot or gone inactive for an extended period.
+
+Your submission/feedback history (Section 1.3) is retained to personalize
+future problems and is not deleted by the `/setup` **Clear** button; it is
+deleted on request (see Section 6) or as part of routine cleanup for
+inactive accounts.
 
 ## 5. Data Security
 
@@ -120,6 +148,9 @@ You can, at any time:
   guild (requires the **Manage Server** permission) it deletes the server's
   configuration. A guild clear does not delete your personal DM
   configuration, and vice versa. Deletion is immediate and cannot be undone.
+- **Delete your submission/feedback history** by contacting the developer via
+  [GitHub Issues](https://github.com/wbrous/leetcode-discord-bot/issues); all
+  records keyed to your Discord user ID (Section 1.3) are removed.
 - **Request full deletion** of your stored DM or guild configuration by
   contacting the developer via
   [GitHub Issues](https://github.com/wbrous/leetcode-discord-bot/issues).

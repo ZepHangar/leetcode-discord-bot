@@ -1,16 +1,17 @@
 /**
  * Per-minute background dispatch: sends today's LeetCode daily problem to every
- * due DM user and guild channel.
+ * due DM user and guild channel as the cv2 problem card.
  *
  * @module services/dailyDispatchService
  */
-import { EmbedBuilder } from 'discord.js';
 import type { GuildSetup, UserSetup } from '@prisma/client';
 import type { ExtendedClient } from '../classes/ExtendedClient.js';
+import { buildDailyCard } from '../features/daily/dailyCard.js';
 import { logger } from '../lib/logger.js';
 import { fetchDailyProblem, type DailyProblem } from '../lib/leetcodeApi.js';
 import { localDateAndTime } from '../utils/setupValidation.js';
-import { generatePersonalizedBlurb } from './aiPersonalizationService.js';
+import { buildDefaultCardContent } from './aiPersonalizationService.js';
+import { resolveDailyCardContent } from './dailyCardService.js';
 import {
   listDueGuildSetups,
   listDueUserSetups,
@@ -19,22 +20,6 @@ import {
 } from './setupService.js';
 
 let isTickRunning = false;
-
-const DIFFICULTY_COLOR: Record<string, number> = {
-  Easy: 0x43a047,
-  Medium: 0xf9a825,
-  Hard: 0xe53935,
-};
-
-function buildDailyEmbed(problem: DailyProblem, blurb: string | null): EmbedBuilder {
-  return new EmbedBuilder()
-    .setTitle(problem.title)
-    .setURL(problem.link)
-    .setDescription(blurb ?? "Today's LeetCode daily is up — good luck!")
-    .addFields({ name: 'Difficulty', value: problem.difficulty, inline: true })
-    .setColor(DIFFICULTY_COLOR[problem.difficulty] ?? 0x5865f2)
-    .setFooter({ text: problem.date });
-}
 
 async function dispatchToUser(
   row: UserSetup,
@@ -45,11 +30,11 @@ async function dispatchToUser(
   if (time !== row.sendTime || row.lastSentDate === date) return;
 
   const problem = await getProblem();
-  const blurb = row.aiPrompt ? await generatePersonalizedBlurb(row.aiPrompt, problem) : null;
-  const embed = buildDailyEmbed(problem, blurb);
+  const content = await resolveDailyCardContent(row.discordUserId, { personalized: true }, problem);
+  const card = buildDailyCard(problem, content);
 
   const user = await client.users.fetch(row.discordUserId);
-  await user.send({ embeds: [embed] });
+  await user.send(card);
   await markUserSent(row.discordUserId, date);
 }
 
@@ -62,12 +47,12 @@ async function dispatchToGuild(
   if (time !== row.sendTime || row.lastSentDate === date) return;
 
   const problem = await getProblem();
-  // GuildSetup.aiPrompt isn't exposed in the UI yet — guild sends never get a blurb.
-  const embed = buildDailyEmbed(problem, null);
+  // Guild cards are shared between members, so they are never personalized.
+  const card = buildDailyCard(problem, buildDefaultCardContent(problem));
 
   const channel = await client.channels.fetch(row.channelId!);
   if (!channel?.isSendable()) throw new Error('channel not sendable');
-  await channel.send({ embeds: [embed] });
+  await channel.send(card);
   await markGuildSent(row.guildId, date);
 }
 

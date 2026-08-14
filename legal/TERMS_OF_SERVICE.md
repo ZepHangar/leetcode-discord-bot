@@ -1,7 +1,7 @@
 # Terms of Service
 
 **Service:** Zep Bot (the "Bot")
-**Effective date:** 2026-08-13
+**Effective date:** 2026-08-14
 **Contact:** [GitHub Issues](https://github.com/wbrous/leetcode-discord-bot/issues)
 
 ## 1. Acceptance
@@ -20,12 +20,18 @@ The Bot is a Discord application that:
   permission) configure a daily reminder for LeetCode's "Daily Challenge"
   problem.
 - On a per-minute schedule, checks configured reminders and — when a user's
-  or guild's configured local send time arrives — delivers a message
-  containing that day's LeetCode problem title, difficulty, and link, either
-  as a direct message (DM) or as a message in a configured guild channel.
-- Optionally, for users who supply a personalization prompt, generates a
-  short AI-written blurb accompanying the daily reminder (see Section 4 and
-  the [Privacy Policy](./PRIVACY_POLICY.md)).
+  or guild's configured local send time arrives — delivers that day's
+  LeetCode problem as an interactive card (either as a direct message (DM)
+  or as a message in a configured guild channel) with **Submit**,
+  **Inc/Dec Difficulty**, and **Give Up** actions.
+- For users who supply a personalization prompt or build up feedback history,
+  generates a personalized version of the problem card — flavor description,
+  difficulty tier, statement, and examples — driven by the user's
+  self-reported difficulty and Inc/Dec requests (see Section 4 and the
+  [Privacy Policy](./PRIVACY_POLICY.md)).
+- Records self-reported difficulty, difficulty-adjustment requests, code
+  submissions, and give-ups (see Section 4 and the
+  [Privacy Policy](./PRIVACY_POLICY.md)).
 
 The Bot is provided by an independent developer, is not affiliated with,
 endorsed by, or sponsored by Discord Inc. or LeetCode, and is not a
@@ -47,6 +53,21 @@ reminder and is sent to a third-party AI provider each time a reminder is
 generated. Do not submit personal, sensitive, or unlawful content in this
 field. See the [Privacy Policy](./PRIVACY_POLICY.md) for how this data is
 stored, transmitted, and can be deleted.
+
+When you use the daily problem card:
+
+- The code file you upload in the **Submit** modal is stored as a
+  Discord-hosted attachment (URL and filename) and is not sent to the AI
+  provider.
+- Your self-reported difficulty rating is stored, and a one-sentence
+  AI-compressed summary of your feedback (rating, requested direction, and
+  any free-text details from the **Inc/Dec Difficulty** modal) is stored to
+  personalize future problems. Raw free-text you type in the **Inc/Dec
+  Difficulty** modal is not stored verbatim — only the compressed summary.
+
+Do not upload code containing personal, sensitive, or unlawful content, and
+do not paste such content into the feedback fields. The Bot does not execute
+or review your submitted code.
 
 ## 5. Acceptable Use
 
